@@ -18,6 +18,8 @@ const amount = document.getElementById('cart-amount')
 const formSubmit = document.getElementById('cart-form')
 formSubmit.addEventListener('submit', (event) => addToCart(event))
 
+let currentItemID = 0
+
 const fetchMenu = () => {
 	fetch('http://localhost:3000/menu')
 		.then((res) => res.json())
@@ -38,15 +40,33 @@ const getMenuItems = (menu) => {
 }
 
 const dish = (menu) => {
+	currentItemID = menu.id
+    console.log(currentItemID)
 	image.setAttribute('src', menu.image)
 	name.textContent = menu.name
 	description.textContent = menu.description
 	price.textContent = menu.price
+	cartNumber.textContent = menu.number_in_bag
 }
 
 const addToCart = (event) => {
-    event.preventDefault()
-    cartNumber.innerText = parseInt(cartNumber.innerText) + parseInt(event.target[0].value)
+	event.preventDefault()
+	cartNumber.innerText =
+		parseInt(cartNumber.innerText) + parseInt(event.target[0].value)
+	// console.log(name.textContent)
+	fetch(`http://localhost:3000/menu/${currentItemID}`, {
+		method: 'PATCH',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			number_in_bag: cartNumber.innerText
+		})
+	})
+		.then((res) => res.json())
+		.then((menu) => {
+            dish(menu[currentItemID])
+		})
 }
 
 fetchMenu()
